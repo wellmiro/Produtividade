@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planejador de Produtividade</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 20px;
+        }
+
+        .planner {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            width: 100%;
+            max-width: 1000px;
+            margin-top: 20px;
+        }
+
+        .planner h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            text-align: center;
+            border-radius: 10px;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: #333;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        input[type="checkbox"] {
+            transform: scale(1.5);
+        }
+
+        #addRowBtn, #clearBtn, #advanceDayBtn, #delayDayBtn {
+            margin-bottom: 10px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #addRowBtn:hover, #clearBtn:hover, #advanceDayBtn:hover, #delayDayBtn:hover {
+            background-color: #45a049;
+        }
+
+        #startTimeSelect {
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .button-container {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .button-container button {
+                margin: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="button-container">
+        <button id="addRowBtn">Adicionar Linha</button>
+        <button id="clearBtn">Limpar Tudo</button>
+        <button id="advanceDayBtn">Adiantar Dia</button>
+        <button id="delayDayBtn">Atrasar Dia</button>
+    </div>
+    <div class="planner">
+        <h1>Planejador de Produtividade</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Hora</th>
+                    <th>Tarefa</th>
+                    <th>Importância</th>
+                    <th>Urgência</th>
+                    <th>Delegável</th>
+                    <th>Desnecessária</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const table = document.querySelector('table tbody');
+            const addRowBtn = document.getElementById('addRowBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const advanceDayBtn = document.getElementById('advanceDayBtn');
+            const delayDayBtn = document.getElementById('delayDayBtn');
+            let startTime = new Date();
+            startTime.setHours(8, 0, 0); // Define a hora de início padrão (8:00)
+
+            function formatTime(date) {
+                let hours = date.getHours().toString().padStart(2, '0');
+                let minutes = date.getMinutes().toString().padStart(2, '0');
+                return `${hours}:${minutes}`;
+            }
+
+            function addRow(time) {
+                let row = table.insertRow();
+                let timeCell = row.insertCell(0);
+                let taskCell = row.insertCell(1);
+                let importanceCell = row.insertCell(2);
+                let urgencyCell = row.insertCell(3);
+                let delegableCell = row.insertCell(4);
+                let unnecessaryCell = row.insertCell(5);
+
+                timeCell.textContent = formatTime(time);
+                taskCell.innerHTML = `<input type="text" class="task-input">`;
+                importanceCell.innerHTML = `<input type="checkbox" class="importance-check">`;
+                urgencyCell.innerHTML = `<input type="checkbox" class="urgency-check">`;
+                delegableCell.innerHTML = `<input type="checkbox" class="delegable-check">`;
+                unnecessaryCell.innerHTML = `<input type="checkbox" class="unnecessary-check">`;
+            }
+
+            function addInitialRows() {
+                let currentTime = new Date(startTime);
+                for (let i = 0; i < 12; i++) {
+                    addRow(currentTime);
+                    currentTime.setMinutes(currentTime.getMinutes() + 15);
+                }
+            }
+
+            addInitialRows();
+
+            addRowBtn.addEventListener('click', function() {
+                let lastRowTime = table.rows[table.rows.length - 1].cells[0].textContent;
+                let lastRowDate = new Date();
+                lastRowDate.setHours(lastRowTime.split(':')[0], lastRowTime.split(':')[1], 0);
+                lastRowDate.setMinutes(lastRowDate.getMinutes() + 15);
+                addRow(lastRowDate);
+            });
+
+            clearBtn.addEventListener('click', function() {
+                table.innerHTML = '';
+                startTime.setHours(8, 0, 0); // Reseta para a hora de início padrão
+                addInitialRows();
+            });
+
+            advanceDayBtn.addEventListener('click', function() {
+                startTime.setHours(startTime.getHours() + 1);
+                table.innerHTML = '';
+                addInitialRows();
+            });
+
+            delayDayBtn.addEventListener('click', function() {
+                startTime.setHours(startTime.getHours() - 1);
+                table.innerHTML = '';
+                addInitialRows();
+            });
+        });
+    </script>
+</body>
+</html>
