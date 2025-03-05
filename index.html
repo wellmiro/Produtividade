@@ -120,7 +120,7 @@
             const advanceDayBtn = document.getElementById('advanceDayBtn');
             const delayDayBtn = document.getElementById('delayDayBtn');
             let startTime = new Date();
-            startTime.setHours(8, 0, 0); // Define a hora de início padrão (8:00)
+            startTime.setHours(8, 0, 0);
 
             function formatTime(date) {
                 let hours = date.getHours().toString().padStart(2, '0');
@@ -143,6 +143,11 @@
                 urgencyCell.innerHTML = `<input type="checkbox" class="urgency-check" ${urgency ? 'checked' : ''}>`;
                 delegableCell.innerHTML = `<input type="checkbox" class="delegable-check" ${delegable ? 'checked' : ''}>`;
                 unnecessaryCell.innerHTML = `<input type="checkbox" class="unnecessary-check" ${unnecessary ? 'checked' : ''}>`;
+
+                // Adiciona listeners para salvar quando os inputs mudarem
+                row.querySelectorAll('input').forEach(input => {
+                    input.addEventListener('change', saveData);
+                });
             }
 
             function addInitialRows() {
@@ -153,38 +158,6 @@
                 }
                 loadData();
             }
-
-            addInitialRows();
-
-            addRowBtn.addEventListener('click', function() {
-                let lastRowTime = table.rows[table.rows.length - 1].cells[0].textContent;
-                let lastRowDate = new Date();
-                lastRowDate.setHours(lastRowTime.split(':')[0], lastRowTime.split(':')[1], 0);
-                lastRowDate.setMinutes(lastRowDate.getMinutes() + 15);
-                addRow(lastRowDate);
-                saveData();
-            });
-
-            clearBtn.addEventListener('click', function() {
-                table.innerHTML = '';
-                startTime.setHours(8, 0, 0); // Reseta para a hora de início padrão
-                addInitialRows();
-                localStorage.removeItem('plannerData');
-            });
-
-            advanceDayBtn.addEventListener('click', function() {
-                startTime.setHours(startTime.getHours() + 1);
-                table.innerHTML = '';
-                addInitialRows();
-                saveData();
-            });
-
-            delayDayBtn.addEventListener('click', function() {
-                startTime.setHours(startTime.getHours() - 1);
-                table.innerHTML = '';
-                addInitialRows();
-                saveData();
-            });
 
             function saveData() {
                 let data = [];
@@ -214,6 +187,38 @@
                     });
                 }
             }
+
+            addInitialRows();
+
+            addRowBtn.addEventListener('click', function() {
+                let lastRowTime = table.rows[table.rows.length - 1].cells[0].textContent;
+                let lastRowDate = new Date();
+                lastRowDate.setHours(lastRowTime.split(':')[0], lastRowTime.split(':')[1], 0);
+                lastRowDate.setMinutes(lastRowDate.getMinutes() + 15);
+                addRow(lastRowDate);
+                saveData();
+            });
+
+            clearBtn.addEventListener('click', function() {
+                table.innerHTML = '';
+                startTime.setHours(8, 0, 0);
+                addInitialRows();
+                localStorage.removeItem('plannerData');
+            });
+
+            advanceDayBtn.addEventListener('click', function() {
+                startTime.setHours(startTime.getHours() + 1);
+                table.innerHTML = '';
+                addInitialRows();
+                saveData();
+            });
+
+            delayDayBtn.addEventListener('click', function() {
+                startTime.setHours(startTime.getHours() - 1);
+                table.innerHTML = '';
+                addInitialRows();
+                saveData();
+            });
         });
     </script>
 </body>
