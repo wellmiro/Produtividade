@@ -11,14 +11,8 @@
             margin: 0;
             padding: 0;
             display: flex;
-            min-height: 100vh;
-        }
-
-        .button-container {
-            display: flex;
             flex-direction: column;
-            align-items: flex-start;
-            padding: 20px;
+            min-height: 100vh;
         }
 
         .planner {
@@ -29,7 +23,7 @@
             padding: 20px;
             width: 100%;
             max-width: 1000px;
-            margin-top: 20px;
+            margin: 20px auto;
         }
 
         .planner h1 {
@@ -68,8 +62,15 @@
             transform: scale(1.5);
         }
 
+        .button-container {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            flex-wrap: wrap;
+        }
+
         #addRowBtn, #clearBtn, #advanceDayBtn, #delayDayBtn {
-            margin-bottom: 10px;
+            margin: 5px;
             padding: 10px 20px;
             background-color: #4CAF50;
             color: white;
@@ -85,27 +86,9 @@
         #startTimeSelect {
             margin-bottom: 10px;
         }
-
-        @media (max-width: 768px) {
-            .button-container {
-                flex-direction: row;
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-
-            .button-container button {
-                margin: 5px;
-            }
-        }
     </style>
 </head>
 <body>
-    <div class="button-container">
-        <button id="addRowBtn">Adicionar Linha</button>
-        <button id="clearBtn">Limpar Tudo</button>
-        <button id="advanceDayBtn">Adiantar Dia</button>
-        <button id="delayDayBtn">Atrasar Dia</button>
-    </div>
     <div class="planner">
         <h1>Planejador de Produtividade</h1>
         <table>
@@ -120,8 +103,14 @@
                 </tr>
             </thead>
             <tbody>
-                </tbody>
+            </tbody>
         </table>
+    </div>
+    <div class="button-container">
+        <button id="addRowBtn">Adicionar Linha</button>
+        <button id="clearBtn">Limpar Tudo</button>
+        <button id="advanceDayBtn">Adiantar Dia</button>
+        <button id="delayDayBtn">Atrasar Dia</button>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -139,7 +128,7 @@
                 return `${hours}:${minutes}`;
             }
 
-            function addRow(time) {
+            function addRow(time, task = '', importance = false, urgency = false, delegable = false, unnecessary = false) {
                 let row = table.insertRow();
                 let timeCell = row.insertCell(0);
                 let taskCell = row.insertCell(1);
@@ -149,11 +138,11 @@
                 let unnecessaryCell = row.insertCell(5);
 
                 timeCell.textContent = formatTime(time);
-                taskCell.innerHTML = `<input type="text" class="task-input">`;
-                importanceCell.innerHTML = `<input type="checkbox" class="importance-check">`;
-                urgencyCell.innerHTML = `<input type="checkbox" class="urgency-check">`;
-                delegableCell.innerHTML = `<input type="checkbox" class="delegable-check">`;
-                unnecessaryCell.innerHTML = `<input type="checkbox" class="unnecessary-check">`;
+                taskCell.innerHTML = `<input type="text" class="task-input" value="${task}">`;
+                importanceCell.innerHTML = `<input type="checkbox" class="importance-check" ${importance ? 'checked' : ''}>`;
+                urgencyCell.innerHTML = `<input type="checkbox" class="urgency-check" ${urgency ? 'checked' : ''}>`;
+                delegableCell.innerHTML = `<input type="checkbox" class="delegable-check" ${delegable ? 'checked' : ''}>`;
+                unnecessaryCell.innerHTML = `<input type="checkbox" class="unnecessary-check" ${unnecessary ? 'checked' : ''}>`;
             }
 
             function addInitialRows() {
@@ -162,6 +151,7 @@
                     addRow(currentTime);
                     currentTime.setMinutes(currentTime.getMinutes() + 15);
                 }
+                loadData();
             }
 
             addInitialRows();
@@ -172,25 +162,58 @@
                 lastRowDate.setHours(lastRowTime.split(':')[0], lastRowTime.split(':')[1], 0);
                 lastRowDate.setMinutes(lastRowDate.getMinutes() + 15);
                 addRow(lastRowDate);
+                saveData();
             });
 
             clearBtn.addEventListener('click', function() {
                 table.innerHTML = '';
                 startTime.setHours(8, 0, 0); // Reseta para a hora de início padrão
                 addInitialRows();
+                localStorage.removeItem('plannerData');
             });
 
             advanceDayBtn.addEventListener('click', function() {
                 startTime.setHours(startTime.getHours() + 1);
                 table.innerHTML = '';
                 addInitialRows();
+                saveData();
             });
 
             delayDayBtn.addEventListener('click', function() {
                 startTime.setHours(startTime.getHours() - 1);
                 table.innerHTML = '';
                 addInitialRows();
+                saveData();
             });
+
+            function saveData() {
+                let data = [];
+                for (let i = 0; i < table.rows.length; i++) {
+                    let row = table.rows[i];
+                    data.push({
+                        time: row.cells[0].textContent,
+                        task: row.cells[1].querySelector('.task-input').value,
+                        importance: row.cells[2].querySelector('.importance-check').checked,
+                        urgency: row.cells[3].querySelector('.urgency-check').checked,
+                        delegable: row.cells[4].querySelector('.delegable-check').checked,
+                        unnecessary: row.cells[5].querySelector('.unnecessary-check').checked
+                    });
+                }
+                localStorage.setItem('plannerData', JSON.stringify(data));
+            }
+
+            function loadData() {
+                let savedData = localStorage.getItem('plannerData');
+                if (savedData) {
+                    let data = JSON.parse(savedData);
+                    table.innerHTML = '';
+                    data.forEach(item => {
+                        let timeDate = new Date();
+                        timeDate.setHours(item.time.split(':')[0], item.time.split(':')[1], 0);
+                        addRow(timeDate, item.task, item.importance, item.urgency, item.delegable, item.unnecessary);
+                    });
+                }
+            }
         });
     </script>
 </body>
