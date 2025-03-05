@@ -4,105 +4,138 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Planejador de Produtividade</title>
-  <style>
+ <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f7f7f7;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
+        font-family: Arial, sans-serif;
+        background-color: #f7f7f7;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
     }
-    /* Painel no desktop: largura mínima para acomodar a tabela */
+
     .planner {
-      background-color: #fff;
-      border: 1px solid #ccc;
-      border-radius: 15px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-      padding: 20px;
-      width: auto;
-      min-width: 640px; /* 600px da tabela + 40px de padding */
-      margin: 20px auto;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        padding: 20px;
+        width: auto;
+        min-width: 640px;
+        margin: 20px auto;
     }
+
     .planner h1 {
-      text-align: center;
-      color: #333;
-      margin-bottom: 20px;
+        text-align: center;
+        color: #333;
+        margin-bottom: 20px;
     }
+
     table {
-      width: 100%;
-      min-width: 600px; /* Garante legibilidade no desktop */
-      border-collapse: collapse;
-      font-size: 14px;
-      text-align: center;
-      border-radius: 10px;
+        width: 100%;
+        min-width: 600px;
+        border-collapse: collapse;
+        font-size: 14px;
+        text-align: center;
+        border-radius: 10px;
     }
+
     th, td {
-      padding: 10px;
-      border: 1px solid #ccc;
-      vertical-align: middle;
+        padding: 10px;
+        border: 1px solid #ccc;
+        vertical-align: middle;
     }
+
     th {
-      background-color: #333;
-      color: #fff;
-      font-weight: bold;
+        background-color: #333;
+        color: #fff;
+        font-weight: bold;
     }
+
     input[type="text"], select {
-      width: 100%;
-      padding: 8px;
-      box-sizing: border-box;
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
     }
+
     input[type="checkbox"] {
-      transform: scale(1.5);
+        transform: scale(1.5);
     }
-    /* Botões: layout em grid (4 colunas no desktop) */
+
     .button-container {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      max-width: 1000px;
-      margin: 20px auto;
-      padding: 0 20px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        max-width: 1000px;
+        margin: 20px auto;
+        padding: 0 20px;
     }
+
     .button-container button {
-      padding: 20px; /* Aumenta a altura dos botões */
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
+        padding: 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
     }
+
     .button-container button:hover {
-      background-color: #45a049;
+        background-color: #45a049;
     }
+
     /* Mobile: ajuste para a tabela e posicionamento dos botões */
     @media (max-width: 768px) {
-      .planner {
-        /* Permite que o painel ocupe 100% da tela */
-        min-width: 100%;
-        padding: 10px;
-      }
-      table {
-        width: 100%;
-        min-width: 0; /* Remove o min-width para que a tabela se ajuste */
-        font-size: 12px;
-      }
-      .button-container {
-        /* Mantemos 4 colunas para posicionar os botões nas colunas 2 e 3 */
-        grid-template-columns: repeat(4, 1fr);
-        justify-items: center;
-      }
-      /* Posiciona os botões de modo que os ímpares fiquem na coluna 2 e os pares na coluna 3 */
-      .button-container button:nth-child(odd) {
-        grid-column: 2 / 3;
-      }
-      .button-container button:nth-child(even) {
-        grid-column: 3 / 4;
-      }
+        .planner {
+            min-width: 100%;
+            padding: 10px;
+        }
+        table {
+            width: 100%;
+            min-width: 0;
+            font-size: 12px;
+        }
+        .button-container {
+            grid-template-columns: repeat(4, 1fr);
+            justify-items: center;
+        }
+        .button-container button:nth-child(odd) {
+            grid-column: 2 / 3;
+        }
+        .button-container button:nth-child(even) {
+            grid-column: 3 / 4;
+        }
     }
-  </style>
+
+    /* Desktop: ajustes para telas maiores */
+    @media (min-width: 769px) {
+        .planner {
+            width: 90%; /* Aumenta a largura para telas maiores */
+            max-width: 1200px; /* Limita a largura máxima */
+            padding: 30px; /* Aumenta o espaçamento interno */
+        }
+        table {
+            font-size: 16px; /* Aumenta o tamanho da fonte */
+        }
+        th, td {
+            padding: 15px; /* Aumenta o espaçamento interno das células */
+        }
+        input[type="text"], select {
+            padding: 10px; /* Aumenta o espaçamento interno dos inputs */
+            font-size: 16px; /* Aumenta o tamanho da fonte dos inputs */
+        }
+        .button-container {
+            max-width: 1200px; /* Aumenta a largura máxima dos botões */
+            gap: 15px; /* Aumenta o espaçamento entre os botões */
+        }
+        .button-container button {
+            padding: 25px; /* Aumenta o espaçamento interno dos botões */
+            font-size: 18px; /* Aumenta o tamanho da fonte dos botões */
+        }
+    }
+</style>
 </head>
 <body>
   <div class="planner">
