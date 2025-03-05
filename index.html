@@ -69,7 +69,7 @@
             flex-wrap: wrap;
         }
 
-        #addRowBtn, #clearBtn, #advanceDayBtn, #delayDayBtn {
+        #addRowBtn, #clearBtn, #advanceHourBtn, #delayHourBtn {
             margin: 5px;
             padding: 10px 20px;
             background-color: #4CAF50;
@@ -79,7 +79,7 @@
             cursor: pointer;
         }
 
-        #addRowBtn:hover, #clearBtn:hover, #advanceDayBtn:hover, #delayDayBtn:hover {
+        #addRowBtn:hover, #clearBtn:hover, #advanceHourBtn:hover, #delayHourBtn:hover {
             background-color: #45a049;
         }
 
@@ -109,117 +109,116 @@
     <div class="button-container">
         <button id="addRowBtn">Adicionar Linha</button>
         <button id="clearBtn">Limpar Tudo</button>
-        <button id="advanceDayBtn">Adiantar Dia</button>
-        <button id="delayDayBtn">Atrasar Dia</button>
+        <button id="advanceHourBtn">Adiantar Hora</button>
+        <button id="delayHourBtn">Atrasar Hora</button>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const table = document.querySelector('table tbody');
-            const addRowBtn = document.getElementById('addRowBtn');
-            const clearBtn = document.getElementById('clearBtn');
-            const advanceDayBtn = document.getElementById('advanceDayBtn');
-            const delayDayBtn = document.getElementById('delayDayBtn');
-            let startTime = new Date();
-            startTime.setHours(8, 0, 0);
+ <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const table = document.querySelector('table tbody');
+        const addRowBtn = document.getElementById('addRowBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const advanceHourBtn = document.getElementById('advanceHourBtn');
+        const delayHourBtn = document.getElementById('delayHourBtn');
+        let startTime = new Date();
+        startTime.setHours(8, 0, 0, 0);
 
-            function formatTime(date) {
-                let hours = date.getHours().toString().padStart(2, '0');
-                let minutes = date.getMinutes().toString().padStart(2, '0');
-                return `${hours}:${minutes}`;
+        function formatTime(date) {
+            let hours = date.getHours().toString().padStart(2, '0');
+            let minutes = date.getMinutes().toString().padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
+
+        function addRow(time, task = '', importance = false, urgency = false, delegable = false, unnecessary = false) {
+            let row = table.insertRow();
+            row.innerHTML = `
+                <td class="time-cell">${formatTime(time)}</td>
+                <td><input type="text" class="task-input" value="${task}"></td>
+                <td><input type="checkbox" class="importance-check" ${importance ? 'checked' : ''}></td>
+                <td><input type="checkbox" class="urgency-check" ${urgency ? 'checked' : ''}></td>
+                <td><input type="checkbox" class="delegable-check" ${delegable ? 'checked' : ''}></td>
+                <td><input type="checkbox" class="unnecessary-check" ${unnecessary ? 'checked' : ''}></td>
+            `;
+
+            row.querySelectorAll('input').forEach(input => {
+                input.addEventListener('change', saveData);
+            });
+        }
+
+        function addInitialRows() {
+            table.innerHTML = '';
+            let currentTime = new Date(startTime);
+            for (let i = 0; i < 12; i++) {
+                addRow(new Date(currentTime));
+                currentTime.setMinutes(currentTime.getMinutes() + 15);
             }
+            loadData();
+        }
 
-            function addRow(time, task = '', importance = false, urgency = false, delegable = false, unnecessary = false) {
-                let row = table.insertRow();
-                let timeCell = row.insertCell(0);
-                let taskCell = row.insertCell(1);
-                let importanceCell = row.insertCell(2);
-                let urgencyCell = row.insertCell(3);
-                let delegableCell = row.insertCell(4);
-                let unnecessaryCell = row.insertCell(5);
-
-                timeCell.textContent = formatTime(time);
-                taskCell.innerHTML = `<input type="text" class="task-input" value="${task}">`;
-                importanceCell.innerHTML = `<input type="checkbox" class="importance-check" ${importance ? 'checked' : ''}>`;
-                urgencyCell.innerHTML = `<input type="checkbox" class="urgency-check" ${urgency ? 'checked' : ''}>`;
-                delegableCell.innerHTML = `<input type="checkbox" class="delegable-check" ${delegable ? 'checked' : ''}>`;
-                unnecessaryCell.innerHTML = `<input type="checkbox" class="unnecessary-check" ${unnecessary ? 'checked' : ''}>`;
-
-                // Adiciona listeners para salvar quando os inputs mudarem
-                row.querySelectorAll('input').forEach(input => {
-                    input.addEventListener('change', saveData);
+        function saveData() {
+            let data = [];
+            for (let row of table.rows) {
+                data.push({
+                    task: row.querySelector('.task-input').value,
+                    importance: row.querySelector('.importance-check').checked,
+                    urgency: row.querySelector('.urgency-check').checked,
+                    delegable: row.querySelector('.delegable-check').checked,
+                    unnecessary: row.querySelector('.unnecessary-check').checked
                 });
             }
+            localStorage.setItem('plannerData', JSON.stringify(data));
+        }
 
-            function addInitialRows() {
-                let currentTime = new Date(startTime);
-                for (let i = 0; i < 12; i++) {
-                    addRow(currentTime);
-                    currentTime.setMinutes(currentTime.getMinutes() + 15);
-                }
-                loadData();
-            }
-
-            function saveData() {
-                let data = [];
-                for (let i = 0; i < table.rows.length; i++) {
+        function loadData() {
+            let savedData = localStorage.getItem('plannerData');
+            if (savedData) {
+                let data = JSON.parse(savedData);
+                for (let i = 0; i < data.length && i < table.rows.length; i++) {
                     let row = table.rows[i];
-                    data.push({
-                        time: row.cells[0].textContent,
-                        task: row.cells[1].querySelector('.task-input').value,
-                        importance: row.cells[2].querySelector('.importance-check').checked,
-                        urgency: row.cells[3].querySelector('.urgency-check').checked,
-                        delegable: row.cells[4].querySelector('.delegable-check').checked,
-                        unnecessary: row.cells[5].querySelector('.unnecessary-check').checked
-                    });
-                }
-                localStorage.setItem('plannerData', JSON.stringify(data));
-            }
-
-            function loadData() {
-                let savedData = localStorage.getItem('plannerData');
-                if (savedData) {
-                    let data = JSON.parse(savedData);
-                    table.innerHTML = '';
-                    data.forEach(item => {
-                        let timeDate = new Date();
-                        timeDate.setHours(item.time.split(':')[0], item.time.split(':')[1], 0);
-                        addRow(timeDate, item.task, item.importance, item.urgency, item.delegable, item.unnecessary);
-                    });
+                    row.querySelector('.task-input').value = data[i].task;
+                    row.querySelector('.importance-check').checked = data[i].importance;
+                    row.querySelector('.urgency-check').checked = data[i].urgency;
+                    row.querySelector('.delegable-check').checked = data[i].delegable;
+                    row.querySelector('.unnecessary-check').checked = data[i].unnecessary;
                 }
             }
+        }
 
-            addInitialRows();
+        function updateTimes() {
+            let currentTime = new Date(startTime);
+            for (let row of table.rows) {
+                row.querySelector('.time-cell').textContent = formatTime(currentTime);
+                currentTime.setMinutes(currentTime.getMinutes() + 15);
+            }
+        }
 
-            addRowBtn.addEventListener('click', function() {
-                let lastRowTime = table.rows[table.rows.length - 1].cells[0].textContent;
-                let lastRowDate = new Date();
-                lastRowDate.setHours(lastRowTime.split(':')[0], lastRowTime.split(':')[1], 0);
-                lastRowDate.setMinutes(lastRowDate.getMinutes() + 15);
-                addRow(lastRowDate);
-                saveData();
-            });
+        addInitialRows();
 
-            clearBtn.addEventListener('click', function() {
-                table.innerHTML = '';
-                startTime.setHours(8, 0, 0);
-                addInitialRows();
-                localStorage.removeItem('plannerData');
-            });
-
-            advanceDayBtn.addEventListener('click', function() {
-                startTime.setHours(startTime.getHours() + 1);
-                table.innerHTML = '';
-                addInitialRows();
-                saveData();
-            });
-
-            delayDayBtn.addEventListener('click', function() {
-                startTime.setHours(startTime.getHours() - 1);
-                table.innerHTML = '';
-                addInitialRows();
-                saveData();
-            });
+        addRowBtn.addEventListener('click', function () {
+            let lastRowTime = table.rows[table.rows.length - 1].querySelector('.time-cell').textContent;
+            let lastRowDate = new Date();
+            lastRowDate.setHours(lastRowTime.split(':')[0], lastRowTime.split(':')[1], 0);
+            lastRowDate.setMinutes(lastRowDate.getMinutes() + 15);
+            addRow(lastRowDate);
+            saveData();
         });
-    </script>
+
+        clearBtn.addEventListener('click', function () {
+            table.innerHTML = '';
+            startTime.setHours(8, 0, 0, 0);
+            addInitialRows();
+            localStorage.removeItem('plannerData');
+        });
+
+        advanceHourBtn.addEventListener('click', function () {
+            startTime.setHours(startTime.getHours() + 1);
+            updateTimes();
+        });
+
+        delayHourBtn.addEventListener('click', function () {
+            startTime.setHours(startTime.getHours() - 1);
+            updateTimes();
+        });
+    });
+</script>
 </body>
 </html>
