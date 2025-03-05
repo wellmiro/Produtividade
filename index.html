@@ -1,224 +1,233 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planejador de Produtividade</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f7f7f7;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        .planner {
-            background-color: #fff;
-            border: 1px solid #ccc;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            padding: 20px;
-            width: 100%;
-            max-width: 1000px;
-            margin: 20px auto;
-        }
-
-        .planner h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-            text-align: center;
-            border-radius: 10px;
-        }
-
-        th, td {
-            padding: 10px;
-            border: 1px solid #ccc;
-            vertical-align: middle;
-        }
-
-        th {
-            background-color: #333;
-            color: #fff;
-            font-weight: bold;
-        }
-
-        input[type="text"], select {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-
-        input[type="checkbox"] {
-            transform: scale(1.5);
-        }
-
-        .button-container {
-            display: flex;
-            justify-content: center;
-            padding: 20px;
-            flex-wrap: wrap;
-        }
-
-        #addRowBtn, #clearBtn, #advanceHourBtn, #delayHourBtn {
-            margin: 5px;
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        #addRowBtn:hover, #clearBtn:hover, #advanceHourBtn:hover, #delayHourBtn:hover {
-            background-color: #45a049;
-        }
-
-        #startTimeSelect {
-            margin-bottom: 10px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planejador de Produtividade</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f7f7;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .planner {
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      padding: 20px;
+      /* O painel agora ajusta sua largura de acordo com a tabela */
+      width: auto;
+      min-width: 640px; /* 600px da tabela + 40px de padding total */
+      margin: 20px auto;
+    }
+    .planner h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      min-width: 600px; /* Garante que a tabela não encolha demais */
+      border-collapse: collapse;
+      font-size: 14px;
+      text-align: center;
+      border-radius: 10px;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      vertical-align: middle;
+    }
+    th {
+      background-color: #333;
+      color: #fff;
+      font-weight: bold;
+    }
+    input[type="text"], select {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    input[type="checkbox"] {
+      transform: scale(1.5);
+    }
+    /* Responsividade dos botões: 4 colunas no desktop, 2 colunas no mobile */
+    .button-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      max-width: 1000px;
+      margin: 20px auto;
+      padding: 0 20px;
+    }
+    #addRowBtn, #clearBtn, #advanceHourBtn, #delayHourBtn {
+      padding: 20px; /* Aumenta a altura dos botões */
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    #addRowBtn:hover, #clearBtn:hover, #advanceHourBtn:hover, #delayHourBtn:hover {
+      background-color: #45a049;
+    }
+    @media (max-width: 768px) {
+      .planner {
+        min-width: 100%;
+      }
+      table {
+        min-width: 600px;
+        font-size: 12px;
+      }
+      .button-container {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="planner">
-        <h1>Planejador de Produtividade</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>Hora</th>
-                    <th>Tarefa</th>
-                    <th>Importância</th>
-                    <th>Urgência</th>
-                    <th>Delegável</th>
-                    <th>Desnecessária</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-    </div>
-    <div class="button-container">
-        <button id="addRowBtn">Adicionar Linha</button>
-        <button id="clearBtn">Limpar Tudo</button>
-        <button id="advanceHourBtn">Adiantar Hora</button>
-        <button id="delayHourBtn">Atrasar Hora</button>
-    </div>
- <script>
+  <div class="planner">
+    <h1>Planejador de Produtividade</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Hora</th>
+          <th>Tarefa</th>
+          <th>Importância</th>
+          <th>Urgência</th>
+          <th>Delegável</th>
+          <th>Desnecessária</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div class="button-container">
+    <button id="addRowBtn">Adicionar Linha</button>
+    <button id="clearBtn">Limpar Tudo</button>
+    <button id="advanceHourBtn">Adiantar Hora</button>
+    <button id="delayHourBtn">Atrasar Hora</button>
+  </div>
+  <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const table = document.querySelector('table tbody');
-        const addRowBtn = document.getElementById('addRowBtn');
-        const clearBtn = document.getElementById('clearBtn');
-        const advanceHourBtn = document.getElementById('advanceHourBtn');
-        const delayHourBtn = document.getElementById('delayHourBtn');
-        let startTime = new Date();
+      const table = document.querySelector('table tbody');
+      const addRowBtn = document.getElementById('addRowBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const advanceHourBtn = document.getElementById('advanceHourBtn');
+      const delayHourBtn = document.getElementById('delayHourBtn');
+      let startTime = new Date();
+      startTime.setHours(8, 0, 0, 0);
+
+      function formatTime(date) {
+        let hours = date.getHours().toString().padStart(2, '0');
+        let minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+      }
+
+      // Cria uma linha na tabela com o horário calculado
+      function addRow(time, task = '', importance = false, urgency = false, delegable = false, unnecessary = false) {
+        let row = table.insertRow();
+        row.innerHTML = `
+          <td class="time-cell">${formatTime(time)}</td>
+          <td><input type="text" class="task-input" value="${task}"></td>
+          <td><input type="checkbox" class="importance-check" ${importance ? 'checked' : ''}></td>
+          <td><input type="checkbox" class="urgency-check" ${urgency ? 'checked' : ''}></td>
+          <td><input type="checkbox" class="delegable-check" ${delegable ? 'checked' : ''}></td>
+          <td><input type="checkbox" class="unnecessary-check" ${unnecessary ? 'checked' : ''}></td>
+        `;
+        row.querySelectorAll('input').forEach(input => {
+          input.addEventListener('change', saveData);
+        });
+      }
+
+      // Cria as linhas iniciais. Se houver dados salvos, cria tantas linhas quanto o número de registros salvos; caso contrário, cria 12 linhas.
+      function addInitialRows() {
+        table.innerHTML = '';
+        let savedData = localStorage.getItem('plannerData');
+        let numRows = savedData ? JSON.parse(savedData).length : 12;
+        let currentTime = new Date(startTime);
+        for (let i = 0; i < numRows; i++) {
+          addRow(new Date(currentTime));
+          currentTime.setMinutes(currentTime.getMinutes() + 15);
+        }
+        loadData();
+      }
+
+      // Salva os dados dos inputs (exceto o horário) no localStorage
+      function saveData() {
+        let data = [];
+        for (let row of table.rows) {
+          data.push({
+            task: row.querySelector('.task-input').value,
+            importance: row.querySelector('.importance-check').checked,
+            urgency: row.querySelector('.urgency-check').checked,
+            delegable: row.querySelector('.delegable-check').checked,
+            unnecessary: row.querySelector('.unnecessary-check').checked
+          });
+        }
+        localStorage.setItem('plannerData', JSON.stringify(data));
+      }
+
+      // Atualiza os dados dos inputs com os dados salvos
+      function loadData() {
+        let savedData = localStorage.getItem('plannerData');
+        if (savedData) {
+          let data = JSON.parse(savedData);
+          for (let i = 0; i < data.length && i < table.rows.length; i++) {
+            let row = table.rows[i];
+            row.querySelector('.task-input').value = data[i].task;
+            row.querySelector('.importance-check').checked = data[i].importance;
+            row.querySelector('.urgency-check').checked = data[i].urgency;
+            row.querySelector('.delegable-check').checked = data[i].delegable;
+            row.querySelector('.unnecessary-check').checked = data[i].unnecessary;
+          }
+        }
+      }
+
+      // Atualiza os horários de todas as linhas com base no novo startTime
+      function updateTimes() {
+        let currentTime = new Date(startTime);
+        for (let row of table.rows) {
+          row.querySelector('.time-cell').textContent = formatTime(currentTime);
+          currentTime.setMinutes(currentTime.getMinutes() + 15);
+        }
+      }
+
+      addInitialRows();
+
+      addRowBtn.addEventListener('click', function () {
+        // Calcula o horário da nova linha com base no último horário exibido
+        let lastRowTime = table.rows[table.rows.length - 1].querySelector('.time-cell').textContent;
+        let lastRowDate = new Date();
+        lastRowDate.setHours(lastRowTime.split(':')[0], lastRowTime.split(':')[1], 0);
+        lastRowDate.setMinutes(lastRowDate.getMinutes() + 15);
+        addRow(lastRowDate);
+        saveData();
+      });
+
+      clearBtn.addEventListener('click', function () {
+        table.innerHTML = '';
         startTime.setHours(8, 0, 0, 0);
-
-        function formatTime(date) {
-            let hours = date.getHours().toString().padStart(2, '0');
-            let minutes = date.getMinutes().toString().padStart(2, '0');
-            return `${hours}:${minutes}`;
-        }
-
-        function addRow(time, task = '', importance = false, urgency = false, delegable = false, unnecessary = false) {
-            let row = table.insertRow();
-            row.innerHTML = `
-                <td class="time-cell">${formatTime(time)}</td>
-                <td><input type="text" class="task-input" value="${task}"></td>
-                <td><input type="checkbox" class="importance-check" ${importance ? 'checked' : ''}></td>
-                <td><input type="checkbox" class="urgency-check" ${urgency ? 'checked' : ''}></td>
-                <td><input type="checkbox" class="delegable-check" ${delegable ? 'checked' : ''}></td>
-                <td><input type="checkbox" class="unnecessary-check" ${unnecessary ? 'checked' : ''}></td>
-            `;
-
-            row.querySelectorAll('input').forEach(input => {
-                input.addEventListener('change', saveData);
-            });
-        }
-
-        function addInitialRows() {
-            table.innerHTML = '';
-            let currentTime = new Date(startTime);
-            for (let i = 0; i < 12; i++) {
-                addRow(new Date(currentTime));
-                currentTime.setMinutes(currentTime.getMinutes() + 15);
-            }
-            loadData();
-        }
-
-        function saveData() {
-            let data = [];
-            for (let row of table.rows) {
-                data.push({
-                    task: row.querySelector('.task-input').value,
-                    importance: row.querySelector('.importance-check').checked,
-                    urgency: row.querySelector('.urgency-check').checked,
-                    delegable: row.querySelector('.delegable-check').checked,
-                    unnecessary: row.querySelector('.unnecessary-check').checked
-                });
-            }
-            localStorage.setItem('plannerData', JSON.stringify(data));
-        }
-
-        function loadData() {
-            let savedData = localStorage.getItem('plannerData');
-            if (savedData) {
-                let data = JSON.parse(savedData);
-                for (let i = 0; i < data.length && i < table.rows.length; i++) {
-                    let row = table.rows[i];
-                    row.querySelector('.task-input').value = data[i].task;
-                    row.querySelector('.importance-check').checked = data[i].importance;
-                    row.querySelector('.urgency-check').checked = data[i].urgency;
-                    row.querySelector('.delegable-check').checked = data[i].delegable;
-                    row.querySelector('.unnecessary-check').checked = data[i].unnecessary;
-                }
-            }
-        }
-
-        function updateTimes() {
-            let currentTime = new Date(startTime);
-            for (let row of table.rows) {
-                row.querySelector('.time-cell').textContent = formatTime(currentTime);
-                currentTime.setMinutes(currentTime.getMinutes() + 15);
-            }
-        }
-
         addInitialRows();
+        localStorage.removeItem('plannerData');
+      });
 
-        addRowBtn.addEventListener('click', function () {
-            let lastRowTime = table.rows[table.rows.length - 1].querySelector('.time-cell').textContent;
-            let lastRowDate = new Date();
-            lastRowDate.setHours(lastRowTime.split(':')[0], lastRowTime.split(':')[1], 0);
-            lastRowDate.setMinutes(lastRowDate.getMinutes() + 15);
-            addRow(lastRowDate);
-            saveData();
-        });
+      advanceHourBtn.addEventListener('click', function () {
+        startTime.setHours(startTime.getHours() + 1);
+        updateTimes();
+      });
 
-        clearBtn.addEventListener('click', function () {
-            table.innerHTML = '';
-            startTime.setHours(8, 0, 0, 0);
-            addInitialRows();
-            localStorage.removeItem('plannerData');
-        });
-
-        advanceHourBtn.addEventListener('click', function () {
-            startTime.setHours(startTime.getHours() + 1);
-            updateTimes();
-        });
-
-        delayHourBtn.addEventListener('click', function () {
-            startTime.setHours(startTime.getHours() - 1);
-            updateTimes();
-        });
+      delayHourBtn.addEventListener('click', function () {
+        startTime.setHours(startTime.getHours() - 1);
+        updateTimes();
+      });
     });
-</script>
+  </script>
 </body>
 </html>
