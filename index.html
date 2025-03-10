@@ -135,6 +135,18 @@
             font-size: 18px; /* Aumenta o tamanho da fonte dos botões */
         }
     }
+.analytics-panel {
+    background-color: #e0e0e0;
+    padding: 20px;
+    margin: 20px auto; /* Adicionado para centralizar horizontalmente */
+    border-radius: 10px;
+    width: auto;
+    min-width: 640px;
+    text-align: center;
+    display: flex; /* Adicionado para centralizar o conteúdo */
+    flex-direction: column; /* Adicionado para centralizar o conteúdo */
+    align-items: center; /* Adicionado para centralizar o conteúdo */
+}
 </style>
 </head>
 <body>
@@ -160,115 +172,169 @@
     <button id="advanceHourBtn">Adiantar Hora</button>
     <button id="delayHourBtn">Atrasar Hora</button>
   </div>
-  <script>
+
+<div class="analytics-panel" id="analyticsPanel">
+    <h2>Análise de Tempo</h2>
+    <p>Horas Perdidas com Tarefas Desnecessárias: 0 horas</p>
+    <p>Horas Perdidas com Tarefas Delegáveis: 0 horas</p>
+    <p>Horas Perdidas com Tarefas Não Importantes: 0 horas</p>
+    <p>Horas Perdidas com Tarefas Não Urgentes: 0 horas</p>
+</div>
+<script>
     document.addEventListener('DOMContentLoaded', function () {
-      const table = document.querySelector('table tbody');
-      const addRowBtn = document.getElementById('addRowBtn');
-      const clearBtn = document.getElementById('clearBtn');
-      const advanceHourBtn = document.getElementById('advanceHourBtn');
-      const delayHourBtn = document.getElementById('delayHourBtn');
-      let startTime = new Date();
-      startTime.setHours(8, 0, 0, 0);
-
-      function formatTime(date) {
-        let hours = date.getHours().toString().padStart(2, '0');
-        let minutes = date.getMinutes().toString().padStart(2, '0');
-        return `${hours}:${minutes}`;
-      }
-
-      function addRow(time, task = '', importance = false, urgency = false, delegable = false, unnecessary = false) {
-        let row = table.insertRow();
-        row.innerHTML = `
-          <td class="time-cell">${formatTime(time)}</td>
-          <td><input type="text" class="task-input" value="${task}"></td>
-          <td><input type="checkbox" class="importance-check" ${importance ? 'checked' : ''}></td>
-          <td><input type="checkbox" class="urgency-check" ${urgency ? 'checked' : ''}></td>
-          <td><input type="checkbox" class="delegable-check" ${delegable ? 'checked' : ''}></td>
-          <td><input type="checkbox" class="unnecessary-check" ${unnecessary ? 'checked' : ''}></td>
-        `;
-        row.querySelectorAll('input').forEach(input => {
-          input.addEventListener('change', saveData);
-        });
-      }
-
-      // Se houver dados salvos, cria um número de linhas igual ao registrado; senão, cria 12 linhas.
-      function addInitialRows() {
-        table.innerHTML = '';
-        let savedData = localStorage.getItem('plannerData');
-        let numRows = savedData ? JSON.parse(savedData).length : 12;
-        let currentTime = new Date(startTime);
-        for (let i = 0; i < numRows; i++) {
-          addRow(new Date(currentTime));
-          currentTime.setMinutes(currentTime.getMinutes() + 15);
-        }
-        loadData();
-      }
-
-      function saveData() {
-        let data = [];
-        for (let row of table.rows) {
-          data.push({
-            task: row.querySelector('.task-input').value,
-            importance: row.querySelector('.importance-check').checked,
-            urgency: row.querySelector('.urgency-check').checked,
-            delegable: row.querySelector('.delegable-check').checked,
-            unnecessary: row.querySelector('.unnecessary-check').checked
-          });
-        }
-        localStorage.setItem('plannerData', JSON.stringify(data));
-      }
-
-      function loadData() {
-        let savedData = localStorage.getItem('plannerData');
-        if (savedData) {
-          let data = JSON.parse(savedData);
-          for (let i = 0; i < data.length && i < table.rows.length; i++) {
-            let row = table.rows[i];
-            row.querySelector('.task-input').value = data[i].task;
-            row.querySelector('.importance-check').checked = data[i].importance;
-            row.querySelector('.urgency-check').checked = data[i].urgency;
-            row.querySelector('.delegable-check').checked = data[i].delegable;
-            row.querySelector('.unnecessary-check').checked = data[i].unnecessary;
-          }
-        }
-      }
-
-      function updateTimes() {
-        let currentTime = new Date(startTime);
-        for (let row of table.rows) {
-          row.querySelector('.time-cell').textContent = formatTime(currentTime);
-          currentTime.setMinutes(currentTime.getMinutes() + 15);
-        }
-      }
-
-      addInitialRows();
-
-      addRowBtn.addEventListener('click', function () {
-        let lastRowTime = table.rows[table.rows.length - 1].querySelector('.time-cell').textContent;
-        let lastRowDate = new Date();
-        lastRowDate.setHours(lastRowTime.split(':')[0], lastRowTime.split(':')[1], 0);
-        lastRowDate.setMinutes(lastRowDate.getMinutes() + 15);
-        addRow(lastRowDate);
-        saveData();
-      });
-
-      clearBtn.addEventListener('click', function () {
-        table.innerHTML = '';
+        const table = document.querySelector('table tbody');
+        const addRowBtn = document.getElementById('addRowBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const advanceHourBtn = document.getElementById('advanceHourBtn');
+        const delayHourBtn = document.getElementById('delayHourBtn');
+        let startTime = new Date();
         startTime.setHours(8, 0, 0, 0);
+        const analyticsPanel = document.getElementById('analyticsPanel');
+
+        // Formata o horário (ex: 08:00)
+        function formatTime(date) {
+            let hours = date.getHours().toString().padStart(2, '0');
+            let minutes = date.getMinutes().toString().padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
+
+        // Formata a duração em minutos; se for 60 ou mais, converte para horas
+        function formatDuration(minutes) {
+            if (minutes < 60) {
+                return `${minutes} minutos`;
+            } else {
+                const hours = Math.floor(minutes / 60);
+                const remainingMinutes = minutes % 60;
+                return remainingMinutes > 0 
+                    ? `${hours} horas e ${remainingMinutes} minutos` 
+                    : `${hours} horas`;
+            }
+        }
+
+        function addRow(time, task = '', importance = false, urgency = false, delegable = false, unnecessary = false) {
+            let row = table.insertRow();
+            row.innerHTML = `
+                <td class="time-cell">${formatTime(time)}</td>
+                <td><input type="text" class="task-input" value="${task}"></td>
+                <td><input type="checkbox" class="importance-check" ${importance ? 'checked' : ''}></td>
+                <td><input type="checkbox" class="urgency-check" ${urgency ? 'checked' : ''}></td>
+                <td><input type="checkbox" class="delegable-check" ${delegable ? 'checked' : ''}></td>
+                <td><input type="checkbox" class="unnecessary-check" ${unnecessary ? 'checked' : ''}></td>
+            `;
+            row.querySelectorAll('input').forEach(input => {
+                input.addEventListener('change', saveData);
+            });
+        }
+
+        function loadData() {
+            let savedData = localStorage.getItem('plannerData');
+            if (savedData) {
+                try {
+                    let data = JSON.parse(savedData);
+                    if (Array.isArray(data)) {
+                        return data;
+                    }
+                } catch (e) {
+                    console.error("Erro ao carregar dados do localStorage:", e);
+                }
+            }
+            return [];
+        }
+
+        let loadedData = loadData();
+
+        function addInitialRows() {
+            table.innerHTML = '';
+            let numRows = loadedData.length > 0 ? loadedData.length : 12;
+            let currentTime = new Date(startTime);
+            for (let i = 0; i < numRows; i++) {
+                addRow(new Date(currentTime), loadedData[i]?.task, loadedData[i]?.importance, loadedData[i]?.urgency, loadedData[i]?.delegable, loadedData[i]?.unnecessary);
+                currentTime.setMinutes(currentTime.getMinutes() + 15);
+            }
+            updateAnalytics();
+        }
+
+        function saveData() {
+            let data = [];
+            for (let row of table.rows) {
+                data.push({
+                    task: row.querySelector('.task-input').value,
+                    importance: row.querySelector('.importance-check').checked,
+                    urgency: row.querySelector('.urgency-check').checked,
+                    delegable: row.querySelector('.delegable-check').checked,
+                    unnecessary: row.querySelector('.unnecessary-check').checked
+                });
+            }
+            localStorage.setItem('plannerData', JSON.stringify(data));
+            updateAnalytics();
+        }
+
+        function updateTimes() {
+            let currentTime = new Date(startTime);
+            for (let row of table.rows) {
+                row.querySelector('.time-cell').textContent = formatTime(currentTime);
+                currentTime.setMinutes(currentTime.getMinutes() + 15);
+            }
+        }
+
+        // Agora acumula o tempo em minutos e formata a saída
+        function updateAnalytics() {
+            let unnecessaryMinutes = 0;
+            let delegableMinutes = 0;
+            let importantMinutes = 0;
+            let urgentMinutes = 0;
+
+            for (let row of table.rows) {
+                let unnecessary = row.querySelector('.unnecessary-check').checked;
+                let delegable = row.querySelector('.delegable-check').checked;
+                let important = row.querySelector('.importance-check').checked;
+                let urgent = row.querySelector('.urgency-check').checked;
+
+                if (unnecessary) unnecessaryMinutes += 15;
+                if (delegable) delegableMinutes += 15;
+                if (important) importantMinutes += 15;
+                if (urgent) urgentMinutes += 15;
+            }
+
+            analyticsPanel.innerHTML = `
+                <h2>Análise de Tempo</h2>
+                <p>Tempo em Tarefas Desnecessárias: ${formatDuration(unnecessaryMinutes)}</p>
+                <p>Tempo em Tarefas Delegáveis: ${formatDuration(delegableMinutes)}</p>
+                <p>Tempo em Tarefas Importantes: ${formatDuration(importantMinutes)}</p>
+                <p>Tempo em Tarefas Urgentes: ${formatDuration(urgentMinutes)}</p>
+            `;
+        }
+
         addInitialRows();
-        localStorage.removeItem('plannerData');
-      });
 
-      advanceHourBtn.addEventListener('click', function () {
-        startTime.setHours(startTime.getHours() + 1);
-        updateTimes();
-      });
+        addRowBtn.addEventListener('click', function () {
+            let lastRowTime = table.rows[table.rows.length - 1].querySelector('.time-cell').textContent;
+            let lastRowDate = new Date();
+            lastRowDate.setHours(lastRowTime.split(':')[0], lastRowTime.split(':')[1], 0);
+            lastRowDate.setMinutes(lastRowDate.getMinutes() + 15);
+            addRow(lastRowDate);
+            saveData();
+        });
 
-      delayHourBtn.addEventListener('click', function () {
-        startTime.setHours(startTime.getHours() - 1);
-        updateTimes();
-      });
+        clearBtn.addEventListener('click', function () {
+            table.innerHTML = '';
+            startTime.setHours(8, 0, 0, 0);
+            addInitialRows();
+            localStorage.removeItem('plannerData');
+        });
+
+        advanceHourBtn.addEventListener('click', function () {
+            startTime.setHours(startTime.getHours() + 1);
+            updateTimes();
+        });
+
+        delayHourBtn.addEventListener('click', function () {
+            startTime.setHours(startTime.getHours() - 1);
+            updateTimes();
+        });
     });
-  </script>
+</script>
+
+
 </body>
 </html>
